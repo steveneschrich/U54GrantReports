@@ -5,7 +5,9 @@ subtitle: "`r params$start_date` to `r params$end_date`"
 author: ""
 output: 
   officedown::rdocx_document:
-    reference_docx: "../templates/newqsc.docx"
+    # NB: R execution does not seem supported here, so include path 
+    # relative to markdown document (typically in reports/ vs templates/).
+    reference_docx: "../templates/u54_docx.docx"
     page_margins:
       bottom: 0.5
       top: 0.5
@@ -18,13 +20,11 @@ output:
       width: 8.5
       height: 11
       orient: "portrait"
-#    reference_docx: "/Library/Frameworks/R.framework/Versions/4.1/Resources/library/qsctemplates/rmarkdown/templates/qsc_docx/resources/qsc_docx.docx"
-#    mapstyles:
-#      Normal: ['First Paragraph']
 
 knit: pgreportr::knit_docx_with_datestamp
 
-# Markdown parameters. You can specify a REDCap export file (.r or .csv pair) or a
+# Markdown parameters. You can specify a REDCap export
+# file (.r or .csv pair) or a
 # URL for importing from a REDCap server live.
 #
 # The start/end date are self-explanatory for report.
@@ -32,8 +32,6 @@ params:
   redcap_data: "PartnershipTrackingG_R_2022-01-20_1005.r"
   start_date: "2006-09-26"
   end_date: "2022-02-20"
-  
-  
 
 ---
 
