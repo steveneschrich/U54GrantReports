@@ -82,6 +82,7 @@ grants_pending<-grants %>%
   pgreportr::filter_grants_pending_review() 
 ```
 
+
 ```{r build-summary-table}
 
 # The goal of this tibble is:
@@ -93,7 +94,7 @@ grants_pending<-grants %>%
 yr_summary<-tibble::tribble(
     ~tag, ~Description, ~Data, ~Detail,
   "submissions",
-  sprintf("Total Grant Submissions"), 
+  "Total Grant Submissions", 
   grants_submitted,
 "
 The total number of grants with Submission Date in the range of {params$start_date} to {params$end_date}
@@ -101,23 +102,20 @@ are listed.
 ",
   
   "esi-related submissions",
-  sprintf("Total ESI-Related Grants Submitted"), 
+  "Total ESI-Related Grants Submitted", 
   grants_submitted %>% filter_grants_esi_related(),
 "
 The total number of grants submitted in the range of {params$start_date} to {params$end_date} that are
 identified as ESI-Related. ESI-Related is defined as ...
 ",
 
- # "num esi-related mentions",
-  # FIXME???
- # sprintf("Total Number of times an ESI was involved in a submission"),
-  #nrow(grants_submitted %>% 
-  #                              filter_grants_esi_related() %>%
-  #                              expand_investigators(cols=investigators) %>%
-  #                              filter(is_esi_investigator(`Partnership Role`))),
-  # NB: This really isn't needed, since it's not printed in details.
-#  grants_submitted %>% filter_grants_esi_related() %>% expand_investigators(cols=investigators) %>%
-#                                filter(is_esi_investigator(`Partnership Role`)),
+ # NOTE: This is a repeated table since ESI-mentions are the same grants
+ # as ESI-related. There is an override below for the counts.
+ "num esi-related mentions",
+ "Total Number of times an ESI was involved in a submission",
+  grants_submitted %>% filter_grants_esi_related(),
+"
+",
   
   "submissions not funded",
   sprintf("Total Grant Submissions Not Funded"), 
@@ -154,9 +152,14 @@ may not have been determined to be Not Funded. NB: Redefine the not funded, it i
 
   ) %>%
   dplyr::mutate(
-    `Count` = purrr::map_int(Data, nrow),
+    `Count` = ifelse(tag =="num esi-related mentions",
+                     purrr::map_int(Data, pgreportr::count_esi_mentions_in_grant),
+                     purrr::map_int(Data, nrow)
+    ),
     `Count` = tidyr::replace_na(`Count`, "0")
+
   )
+
 ```
 
 
