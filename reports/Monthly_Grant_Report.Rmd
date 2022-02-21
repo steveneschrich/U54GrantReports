@@ -30,7 +30,7 @@ knit: pgreportr::knit_docx_with_datestamp
 params:
   uri: "https://redcap.psm.edu/api/"
   redcap_data: "PartnershipTrackingG_R_2022-02-01_1542.r"
-  end_date: "2022-02-01"
+  end_date: "2022-02-21"
   use_cache: TRUE
 ---
                             
@@ -48,6 +48,8 @@ redcap_version_date <- lubridate::today()
 # Current Partnership Grant reporting year
 pg_yr<-pgreportr::convert_date_to_pg_year(params$end_date)
 start_date <- pgreportr::pg_start_date(pg_yr)
+
+
 ```
 
 ---
@@ -74,6 +76,13 @@ The purpose of this report is to list and count U54-related grants submitted, fu
 if ( params$use_cache ) {
   grants <- readRDS(here::here("data","cached_grants.rds"))
 } else {
+  # NOTE:
+  # If you have not stored the key yet, use the following command at the R prompt to store it.
+  #
+  # keyring::key_set("pgreportr-REDCap-Grants-API-token", username = NULL, prompt = "REDCap API Grants Token: ")
+  #
+  # Get API key
+  token <- keyring::key_get("pgreportr-REDCap-Grants-API-token", NULL)
   suppressMessages(
     grants <- pgreportr::import_grants(params$uri, token)
   )
@@ -171,8 +180,10 @@ meaning that a ESI is named within the grant.
   grants_pending,
 "
 The number of grant submissions that are currently pending review. That is, grants that are 
-submitted but no final decision has been determined. Note that given the time window of the
-report, there may be no grants pending review.
+submitted but no final decision has been determined. Given the time window of the
+report (e.g., the start of the fiscal year), there may be no grants pending review. Note that
+for consistency, any grants pending review are listed. This includes grants outside of the
+report range (before or after), so this number may disagree with grants submitted in a time range.
 ",
   
   "esi submissions pending",
