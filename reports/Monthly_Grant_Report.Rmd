@@ -31,6 +31,7 @@ params:
   uri: "https://redcap.psm.edu/api/"
   redcap_data: "PartnershipTrackingG_R_2022-02-01_1542.r"
   end_date: "2022-02-01"
+  use_cache: TRUE
 ---
                             
 
@@ -69,9 +70,15 @@ The purpose of this report is to list and count U54-related grants submitted, fu
 
 
 ```{r load-redcap}
-suppressMessages(
-grants <- pgreportr::import_grants(params$uri, token)
-)
+
+if ( params$use_cache ) {
+  grants <- readRDS(here::here("data","cached_grants.rds"))
+} else {
+  suppressMessages(
+    grants <- pgreportr::import_grants(params$uri, token)
+  )
+  saveRDS(grants, here::here("data","cached_grants.rds"))
+}
 ```
 
 
