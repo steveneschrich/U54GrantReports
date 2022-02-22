@@ -122,14 +122,14 @@ grants_pending<-grants %>%
 summary_table<-tibble::tribble(
     ~tag, ~Description, ~Data,~Detail,
   "submissions",
-  "Total Grant Submissions", 
+  glue::glue("{pg_yr} Grant Submissions"), 
   grants_submitted,
 "
 The total number of grants with Submission Date in the range of {start_date} to {params$end_date} are listed.
 ",
   
   "esi-related submissions",
-  "Total ESI-Related Grants Submitted", 
+  glue::glue("{pg_yr} ESI-Related Grants Submitted"), 
   grants_submitted %>% filter_grants_esi_related(),
 "
 The total number of grants submitted in the range of {start_date} to {params$end_date} that are
@@ -140,7 +140,7 @@ necessarily PI, etc).
   # NOTE: This is a repeated table since ESI-mentions are the same grants
   # as ESI-related. There is an override below for the counts.
   "num esi-related mentions",
-  "Total Number of times an ESI was involved in a submission",
+  glue::glue("Number of times an ESI was involved in a {pg_yr} submission"),
   grants_submitted %>% pgreportr::filter_grants_esi_related(),
 "
 The total number of times an ESI was involved in a grant submitted in the range of {start_date} to {params$end_date}. Each participant of a grant submission is counted if the participant is an ESI.
@@ -149,14 +149,14 @@ The same ESI may be counted multiple times as a member of distinct grant submiss
   
   
   "submissions not funded",
-  "Total Grant Submissions Not Funded", 
+  glue::glue("Grants Not Funded in {pg_yr}"), 
    grants_submitted %>% pgreportr::filter_grants_not_funded(),
 "
 The total number of grants submitted in the range of {start_date} to {params$end_date} that were subsequently not funded. Note this is not the number of grants that were determined to be Not Funded within the date range, but rather the number of submissions during the period that were at some point determined Not Funded.
 ",
   
   "grants funded",
-  "Total Grants Funded", 
+  glue::glue("Grants Funded in {pg_yr}"), 
   grants_funded,
 "
 The number of grants that were funded (awarded) between {start_date} to {params$end_date}.
@@ -164,7 +164,7 @@ Note this is determined by the annotated project start date.
 ",
     
   "esi grants funded",
-  "Total ESI-related Grants Funded", 
+  glue::glue("ESI-related Grants Funded in {pg_yr}"), 
   grants_funded %>% pgreportr::filter_grants_esi_related(),
 "
 The number of grants funded between {start_date} to {params$end_date} which are ESI-related,
@@ -172,7 +172,7 @@ meaning that a ESI is named within the grant.
 ",
   
   "submissions pending",
-  "Total Grant Submissions Pending Review",
+  "Submissions Pending Review",
   grants_pending,
 "
 The number of grant submissions that are currently pending review. That is, grants that are 
@@ -183,7 +183,7 @@ report range (before or after), so this number may disagree with grants submitte
 ",
   
   "esi submissions pending",
-"Total ESI-Related Grant Submissions Pending Review", 
+"ESI-Related Grant Submissions Pending Review", 
   grants_pending %>% pgreportr::filter_grants_esi_related(),
 "
 Total number of grant submissions that are currently pending review and that involve an ESI within 
@@ -219,20 +219,20 @@ info_box <- function(title="Submitted", content="21", fill="blue", col="white") 
     ) 
 }
 
-grant_status_color <- c("submissions"="#34789a","grants funded"="#5ea54b","submissions pending"="cornsilk","submissions not funded"="#9e627e")
+grant_status_color <- c("submissions"="#34789a","grants funded"="#5ea54b","submissions pending"="#edab18","submissions not funded"="#FF0800")
 grant_status_color_palette <- function(tag) grant_status_color[tag]
 
 grant_card_list <- list(
-  info_box("Submitted",
+  info_box(dplyr::filter(summary_table, tag=="submissions") %>% dplyr::pull("Description"),
             dplyr::filter(summary_table, tag=="submissions") %>% dplyr::pull("Count"), 
            fill=grant_status_color["submissions"],col="white"),
-  info_box("Funded", 
+  info_box(dplyr::filter(summary_table, tag=="grants funded") %>% dplyr::pull("Description"), 
            dplyr::filter(summary_table, tag=="grants funded") %>% dplyr::pull("Count"), 
            fill=grant_status_color["grants funded"], col = "white"),
-  info_box("Not Funded", 
+  info_box(dplyr::filter(summary_table, tag=="submissions not funded") %>% dplyr::pull("Description"), 
            dplyr::filter(summary_table, tag=="submissions not funded") %>% dplyr::pull("Count"), 
            fill=grant_status_color["submissions not funded"], col="white"),
-  info_box("Pending", 
+  info_box(dplyr::filter(summary_table, tag=="submissions pending") %>% dplyr::pull("Description"), 
            dplyr::filter(summary_table, tag=="submissions pending") %>% dplyr::pull("Count"), 
            fill=grant_status_color["submissions pending"], col="black")
 )
@@ -252,9 +252,11 @@ ptable <- summary_table %>%
 grant_bar_chart <- ggpubr::ggbarplot(ptable, x = "Count",y="Description", ylab = "",
                   palette = grant_status_color, 
                   fill = "tag",
-                  sort.val ="none", width=0.9) +
+                  sort.val ="none", width=0.9,
+                  label = ptable$Count,
+                  lab.size = 7, lab.hjust=-1, lab.vjust=0.2) +
   theme(legend.position = "none",
-        axis.text=element_text(size=8)) 
+        axis.text=element_text(size=8)) +xlim(c(0,ceiling(max(ptable$Count)+0.2*max(ptable$Count))))
 
 
 plot_piechart <- function(df, main="", show_legend=FALSE) {
@@ -305,7 +307,7 @@ grant_piechart_list <- list(
 # Bottom left is the barplot
 # Bottom right are the pie charts
 cowplot::plot_grid(
-  nrow = 2, ncol = 1, rel_heights = c(1,2),
+  nrow = 2, ncol = 1, rel_heights = c(1,3),
   cowplot::plot_grid(nrow=1, plotlist = grant_card_list),
   cowplot::plot_grid(
     nrow = 1, ncol = 2, rel_widths = c(2,3),
