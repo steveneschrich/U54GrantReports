@@ -29,7 +29,7 @@ knit: pgreportr::knit_docx_with_datestamp
 # The start/end date are self-explanatory for report.
 params:
   uri: "https://redcap.psm.edu/api/"
-  end_date: "2021-08-31"
+  end_date: "2022-05-09"
   use_cache: FALSE
 ---
                             
