@@ -32,7 +32,7 @@ params:
   redcap_data: "PartnershipTrackingG_R_2022-02-01_1542.r"
   start_year: "Y06"
   end_date: "2022-06-30"
-  use_cache: FALSE
+  download_from_server: FALSE
   show_counts_in_barcharts: TRUE
 ---
                             
@@ -71,7 +71,7 @@ REDCap data version: `r redcap_version_date`
 
 ```{r load-redcap}
 
-if ( params$use_cache ) {
+if ( params$download_from_server ) {
   grants <- readRDS(here::here("data","cached_grants.rds"))
 } else {
   # NOTE:

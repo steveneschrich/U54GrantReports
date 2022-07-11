@@ -32,7 +32,7 @@ params:
   uri: "https://redcap.psm.edu/api/"
   start_date: "2006-09-26"
   end_date: "2022-02-28"
-  use_cache: TRUE
+  download_from_server: TRUE
 
 ---
 
@@ -62,7 +62,7 @@ REDCap data version: `r redcap_version_date`
 
 ```{r load-redcap}
 
-if ( params$use_cache ) {
+if ( params$download_from_server ) {
   grants <- readRDS(here::here("data","cached_grants.rds"))
 } else {
   # NOTE:

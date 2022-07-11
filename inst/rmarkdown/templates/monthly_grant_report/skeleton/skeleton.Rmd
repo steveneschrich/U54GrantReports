@@ -32,7 +32,7 @@ params:
   end_date: 
      label: "Report End Date:"
      value: "2022-06-30"
-  use_cache: FALSE
+  download_from_server: FALSE
 ---
                             
 
@@ -70,7 +70,7 @@ REDCap data version: `r redcap_version_date`
 
 ```{r load-redcap}
 
-if ( params$use_cache ) {
+if ( params$download_from_server ) {
   grants <- readRDS(here::here("data","cached_grants.rds"))
 } else {
   # NOTE:

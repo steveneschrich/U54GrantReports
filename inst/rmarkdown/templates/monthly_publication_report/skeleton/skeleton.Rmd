@@ -30,7 +30,7 @@ knit: pgreportr::knit_docx_with_datestamp_shiny
 params:
   uri: "https://redcap.psm.edu/api/"
   end_date: "2022-05-31"
-  use_cache: FALSE
+  download_from_server: FALSE
 ---
                             
 
@@ -68,7 +68,7 @@ REDCap data version: `r redcap_version_date`
 
 ```{r load-redcap}
 
-if ( params$use_cache ) {
+if ( params$download_from_server ) {
   pubs <- readRDS(here::here("data","cached_pubs.rds"))
 } else {
   # NOTE:
