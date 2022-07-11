@@ -20,5 +20,5 @@ Imports:
     officer,
     pgreportr
 Remotes: 
-  steveneschrich/pgreportr
+  steveneschrich/pgreportr,
   steveneschrich/U54Reports
