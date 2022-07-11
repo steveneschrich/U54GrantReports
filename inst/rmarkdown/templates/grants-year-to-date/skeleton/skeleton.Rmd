@@ -1,12 +1,12 @@
 ---
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-title:  "PHSU-MCC Monthly Grant Report"
+title:  "PHSU-MCC U54 Grant Report - Year to Date"
 author: ""
 output: 
   officedown::rdocx_document:
     # NB: R execution does not seem supported here, so include path 
     # relative to markdown document (typically in reports/ vs templates/).
-    reference_docx: "u54_docx.docx"
+    reference_docx: "../../u54-report/skeleton/u54_docx.docx"
     page_margins:
       bottom: 0.5
       top: 0.5
@@ -28,7 +28,9 @@ knit: pgreportr::knit_docx_with_datestamp_shiny
 #
 # The start/end date are self-explanatory for report.
 params:
-  uri: "https://redcap.psm.edu/api/"
+  uri:
+     label: "REDCap Server URL for accessing the API:"
+     value: "https://redcap.psm.edu/api/"
   end_date: 
      label: "Report End Date:"
      value: "2022-06-30"
@@ -71,8 +73,6 @@ REDCap data version: `r redcap_version_date`
 ```{r load-redcap}
 
 if ( params$download_from_server ) {
-  grants <- readRDS(here::here("data","cached_grants.rds"))
-} else {
   # NOTE:
   # If you have not stored the key yet, use the following command at the R prompt to store it.
   #
@@ -84,7 +84,10 @@ if ( params$download_from_server ) {
   suppressMessages(
     grants <- pgreportr::import_grants(params$uri, token)
   )
+  dir.create(here::here("data","cached_grants.rds"), showWarnings = FALSE)
   saveRDS(grants, here::here("data","cached_grants.rds"))
+} else {
+  grants <- readRDS(here::here("data","cached_grants.rds"))
 }
 ```
 

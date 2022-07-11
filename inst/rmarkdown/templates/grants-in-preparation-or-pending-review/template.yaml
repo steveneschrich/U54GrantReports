@@ -1,0 +1,8 @@
+name: U54 Grant Report - In Preparation or Pending Review
+description: >
+   This is an operational report for the PEC. The report identifies any in preparation or
+   pending review grants in the database. The purpose of the report is to provide the PEC
+   with a mechanism to follow-up with investigators regarding the status of previously reported
+   in prep/pending grants. It is often the case that this status is not always updated as it
+   must be investigator-provided.
+create_dir: FALSE

@@ -1,0 +1,260 @@
+  ---
+# The report title block contains all of this information, although
+# if they are missing they are excluded. Note that running_title is not
+# included, but is part of the header of the rest of the report.
+title: "Grant Report for In Prep or Under Review"
+running_title: ""
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+project: ""
+srpt_number: 
+version: 1.0
+investigators:
+  - name: ""
+  - name: ""
+project_team:
+analysis_contact:
+report_author: ""
+analysis_team:
+organization: "PHSU-MCC Quantitative Sciences Core"
+
+# A banner will run across the top page. For template packages,
+# you can use dsreportr::banner("qsctemplates::qsc_pdf") or whatever
+# template string is used in the output block. Or name your own
+# image file. Note the width option allows the image to be stretched,
+# which may not be your intent.
+banner: "`r dsreportr::banner('qsctemplates::qsc_pdf')`"
+banner_width: 6.5in
+
+# Output specific options. Note that this skeleton only really applies
+# to a specific template.
+output:
+  qsctemplates::qsc_pdf:
+    latex_engine: pdflatex
+    keep_tex: false
+    
+# General settings for the report. Many of these settings are defaulted
+# and not always needed but can be overridden if desired.
+toc: yes
+toc_depth: 2
+number_sections: true
+fontsize: 11pt
+geometry:
+  - margin=1in
+  - top=1in
+  - bottom=1in
+  - footskip=0.5in
+  
+# This is a brief statement of the report purpose, etc that would be
+# available at the outset.
+abstract: 
+
+# These settings are extras, but I'm not sure they are valid.
+colorlinks: false
+urlcolor: "blue"
+linkcolor: "cyan"
+citecolor: "gray"
+toccolor: "cyan"
+
+params:
+  monthly_report_end_date: "2021-10-31"
+  redcap_data: "PartnershipTrackingG_R_2021-11-22_1707.r"
+---
+
+
+# Overview
+The goal of this report is to summarize grants that are currently in preparation or under review.
+
+
+## Reporting
+
+This document does not actually generate the monthly report through normal rmarkdown,
+but rather as part of the code it creates, formats and outputs the monthly report. The markdown document is retained in order to better annotate the process (and decision-making) in the creation of this report.
+
+This code takes advantage of two very large packages that handle most of the work.
+
+- officer/officedown/flextable: This is a (very) nice way of creating a word document that allows for normal word-related formatting, etc. It is still relatively early in it's lifecycle but has been very helpful in producing the type of layout needed. In particular, the goal is to create a Word document template filled with style definitions. Then the R code can stick text/tables into this document using the pre-defined styles. Hence, a nicely organized Word document. That is what occurs in this markdown. There is a large loop (currently) that generates all of the tables for a specific fiscal year. At the end of the loop, all of the tables are added (with formatting) to the word document. Then, after the loop exits the Word document is written out to disk.
+
+- u54reportr: The data on which these reports is written is taken from a redcap server project that was specifically designed for this type of data. A package (u54reportr) is responsible for taking the raw output of the redcap project and converting it into a usable form for reporting (namely, a tibble). The library has functions to summarize and/or filter by a number of criteria that are useful in the U54 context.
+
+In summary, this code is responsible for loading the redcap data (via u54reportr), slicing and dicing it per reporting criteria (via u54reportr), and then output in attractive summary tables for various projects (via officer/et al).
+
+NOTE: There are three parameters (currently) for this report: 
+
+- the fiscal years to report on
+- the source of the redcap data
+- the month that is being reported for
+
+```{r setup, echo=FALSE}
+suppressPackageStartupMessages({
+  library(readxl)
+  library(dplyr)
+  library(tibble)
+  library(readr)
+  library(lubridate)
+  library(knitr)
+  library(tidyverse)
+  library(janitor)
+  library(here)
+  library(flextable)
+  library(officer)
+  library(officedown)
+  library(u54reportr)
+  library(openxlsx)
+})
+
+knitr::opts_chunk$set(echo=FALSE)
+
+redcap_version_date<-stringr::str_extract(params$redcap_data,"(?<=_)\\d{4}-\\d\\d-\\d\\d(?=_)")
+# Split the data into grants and investigators. 
+grants<-import_redcap_data(params$redcap_data)
+
+```
+
+Create the word document based on the "Monthly Report Template" document, and
+set the title/subtitle/table of contents. Note that you have to open the Word document to generate the TOC, so be sure to do that (and save the result) before sending to others.
+
+```{r}
+doc <-dsreportr::docx("qsctemplates::qsc_docx") %>%
+  body_add_par(sprintf("PHSU-MCC In Prep or Under Review Grant Report"),
+               style = "Title") %>%
+  body_add_par(format(Sys.time(), '%d %B, %Y'), style="Subtitle") %>%
+  body_add_par(sprintf("\nREDCap data version: %s",redcap_version_date)) %>%
+  body_add_par("\n\n\n\n")  %>%
+  body_add_par("Table of Contents", style = "TOC Heading") %>% 
+  body_add_toc(separator=",") %>%
+  body_add_break() %>%
+  body_add_par("Overview", style="heading 1") %>%
+  body_add_par(
+"This report provides information on grants that have a status of 
+in preparation or under review. There is no filtering for timeframes for
+these grants. An additional report is generated for grants that do not
+fall in the status of Funded, In Preparation, Not Funded and Pending Review.")
+```
+
+# Summary Table
+Currently this is one big loop (purrr::walk) to generate everything. It would be great to refactor this code a bit for better portability and future use.
+
+Make sure grants submitted and funded are both restricted to the appropriate window,
+namely the start of the Partnership Grant year.
+
+```{r}
+
+grants_pending_review <- grants %>%
+  filter_grants_pending_review() %>%
+  arrange(`Submission Date`)
+
+grants_in_preparation <- grants %>%
+  filter_grants_in_preparation()
+
+grants_not_otherwise_accounted_for <- grants %>%
+  dplyr::filter(!`Grant Status` %in% c("Funded","In Preparation", "Not Funded", "Pending Review"))
+
+
+
+```
+
+```{r}
+
+
+# The goal of this tibble is:
+# tag: Easy name to refer to row
+# Description: Header text
+# Count: Number of category
+# Detail: Tibble of grants meeting the category criteria
+#
+grant_summary<-tibble::tribble(
+    ~tag, ~Description, ~Detail,
+  "pending_review",
+  "Grants Pending Review", 
+  grants_pending_review ,
+
+  "grants_in_preparation",
+  "Grants in Preparation",  
+  grants_in_preparation,
+  
+  "grants_otherwise",
+  "Grants Not Otherwise Accounted For",
+  grants_not_otherwise_accounted_for
+) %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(Count = nrow(Detail))
+ 
+  
+ 
+  
+```
+
+```{r}
+  # Show the summary table.
+  summary_table<-grant_summary %>%
+    mutate(`Count` = tidyr::replace_na(`Count`, "0")) %>%
+    select(Description, Count) %>%
+    flextable() %>%
+    flextable::bg(bg="#4F81BD", part="header") %>%
+    flextable::color(color="#FFFFFF", part="header") %>%
+    flextable::set_table_properties(width=0.5, layout="autofit")  %>%
+    flextable::fontsize(size=8, part="header") %>%
+    flextable::align(j =2, align = "right", part = "body")
+
+  
+  doc <- doc %>% 
+    body_add_par(value = sprintf("Partnership U54 Renewal Grant Summary"), style="heading 1") %>%
+    body_add_par(value = "\n\n") %>%
+    body_add_flextable(value = summary_table, split=TRUE ) %>%
+    body_add_break()
+  
+```
+  
+
+  
+# Excel Output
+To allow for better auditing of the report, we also dump everything to excel.
+```{r write-xls}
+xls_table <- grant_summary %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(text_output = list(style_grants_as_text_alpha(Detail))) %>%
+  dplyr::select(tag, text_output) %>%
+  tibble::deframe()
+
+write.xlsx(x=xls_table,
+           asTable=FALSE, file=
+             sprintf("InPrep_UnderReview_Grant_Tracking_Tables-%s.xlsx", datestamp()),
+           overwrite=TRUE)
+```
+
+
+# Print grant tables
+Print out all of the summary tables. 
+
+Note this is a little bit weird since the officer package actually uses R6 so it changesobject state rather than being purely functional. As a result of this fact, we can get away with modifying the object in a function rather than chaining function calls together through a pipe.
+
+```{r}
+# Create header string and flextable output.
+grant_summary <- grant_summary %>%
+  dplyr::mutate(header = stringr::str_c(`Description`,": ", `Count`)) %>%
+  rowwise() %>%
+  dplyr::mutate(flextable = list(style_grants_as_flextable_gamma(`Detail`))
+)
+
+# Magic: add each flextable to doc. Note the return result is just TRUE since the
+# function's side effect was adding to doc.
+format_summary_as_docx <- function(doc, header, flextable) {
+  body_add_par(doc, style = "heading 2", value = header) %>%
+    body_add_flextable(value = flextable, split = TRUE) %>%
+    body_add_break()
+  TRUE
+}
+
+grant_summary <- grant_summary %>%
+  dplyr::rowwise() %>%
+  dplyr::mutate(formatted = format_summary_as_docx(doc, header, flextable))
+```
+
+
+
+Save the results to a word document.
+```{r}
+print(doc, target = sprintf("InPrep_UnderReview_Grant_Report_%s.docx",
+                            format(Sys.time(), '%Y%m%d')))
+```
+
