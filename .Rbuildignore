@@ -1,0 +1,8 @@
+^U54Reports\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+data
+data-raw
+delivery
+reports
+templates

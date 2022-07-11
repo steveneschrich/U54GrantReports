@@ -1,0 +1,23 @@
+Package: U54Reports
+Title: Markdown Report Templates for U54 NCI Reporting
+Version: 0.0.0.9000
+Authors@R: 
+    person("Steven", "Eschrich", , "Steven.Eschrich@moffitt.org", role = c("aut", "cre"))
+Description: As part of a NCI-funded U54 grant, this package offers R Markdown templates
+ for reporting on grant activities. This is part of a larger ecosystem consisting of REDCap
+ annotation of grants and publications that can then be reporting on through these templates.
+ Note that much of the functionality behind these templates exists in the library pgreportr
+ (program grant report library). This library holds the markdown templates for nice MS-Word
+ based reports (and Excel raw data dumps).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
+Imports: 
+    dplyr,
+    ggplot2,
+    officedown,
+    officer,
+    pgreportr
+Remotes: 
+  steveneschrich/pgreportr
