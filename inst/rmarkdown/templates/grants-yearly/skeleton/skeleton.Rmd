@@ -1,12 +1,9 @@
 ---
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-title:  "PHSU-MCC Yearly Grant Report"
+title:  "PHSU-MCC U54 Grant Report - Yearly"
 author: ""
 output: 
   officedown::rdocx_document:
-    # NB: R execution does not seem supported here, so include path 
-    # relative to markdown document (typically in reports/ vs templates/).
-    reference_docx: "u54_docx.docx"
     page_margins:
       bottom: 0.5
       top: 0.5
@@ -19,8 +16,13 @@ output:
       width: 8.5
       height: 11
       orient: "portrait"
+      
+      
+# The following parameter has two options:
+# - U54Reports::knit_docx_prompt  --- launch page to set the parameters of the report.
+# - U54Reports::knit_docx --- use parameters defined below (programmer mode).
+knit: U54Reports::knit_docx_prompt
 
-knit: pgreportr::knit_docx_with_datestamp_shiny
 
 # Markdown parameters. You can specify a REDCap export
 # file (.r or .csv pair) or a
@@ -28,11 +30,16 @@ knit: pgreportr::knit_docx_with_datestamp_shiny
 #
 # The start/end date are self-explanatory for report.
 params:
-  uri: "https://redcap.psm.edu/api/"
-  redcap_data: "PartnershipTrackingG_R_2022-02-01_1542.r"
-  start_year: "Y06"
-  end_date: "2022-06-30"
-  download_from_server: FALSE
+  uri:
+     label: "REDCap Server URL for accessing the API:"
+     value: "https://redcap.psm.edu/api/"
+  start_date:
+     label: "Report Start Date:"
+     value: "2017-09-25" 
+  end_date: 
+     label: "Report End Date:"
+     value: "2022-06-30"
+  download_from_server: TRUE
   show_counts_in_barcharts: TRUE
 ---
                             
@@ -49,8 +56,6 @@ redcap_version_date <- lubridate::today()
 
 # Current Partnership Grant reporting year
 pg_yr<-pgreportr::convert_date_to_pg_year(params$end_date)
-start_date <- pgreportr::pg_start_date(params$start_year)
-start_date <- lubridate::ymd("2017-09-25")
 
 ```
 
@@ -72,8 +77,6 @@ REDCap data version: `r redcap_version_date`
 ```{r load-redcap}
 
 if ( params$download_from_server ) {
-  grants <- readRDS(here::here("data","cached_grants.rds"))
-} else {
   # NOTE:
   # If you have not stored the key yet, use the following command at the R prompt to store it.
   #
@@ -85,8 +88,12 @@ if ( params$download_from_server ) {
   suppressMessages(
     grants <- pgreportr::import_grants(params$uri, token)
   )
+  dir.create(here::here("data"), showWarnings = FALSE)
   saveRDS(grants, here::here("data","cached_grants.rds"))
-}
+} else {
+  grants <- readRDS(here::here("data","cached_grants.rds"))
+} 
+
 ```
 
 
@@ -776,12 +783,7 @@ summary_table %>%
 
 ```
 
-```{r eval=FALSE}
-print(doc, target = sprintf("Monthly_Report_%s_%s_%s.docx",
-                            reporting_month, 
-                            reporting_year,
-                            format(Sys.time(), '%Y%m%d')))
-```
+
 
 
 # Excel Summary Output

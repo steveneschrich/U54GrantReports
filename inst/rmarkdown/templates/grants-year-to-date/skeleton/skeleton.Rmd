@@ -4,9 +4,6 @@ title:  "PHSU-MCC U54 Grant Report - Year to Date"
 author: ""
 output: 
   officedown::rdocx_document:
-    # NB: R execution does not seem supported here, so include path 
-    # relative to markdown document (typically in reports/ vs templates/).
-    reference_docx: "../../u54-report/skeleton/u54_docx.docx"
     page_margins:
       bottom: 0.5
       top: 0.5
@@ -20,7 +17,10 @@ output:
       height: 11
       orient: "portrait"
 
-knit: pgreportr::knit_docx_with_datestamp_shiny
+# The following parameter has two options:
+# - U54Reports::knit_docx_prompt  --- launch page to set the parameters of the report.
+# - U54Reports::knit_docx --- use parameters defined below (programmer mode).
+knit: U54Reports::knit_docx_prompt
 
 # Markdown parameters. You can specify a REDCap export
 # file (.r or .csv pair) or a
@@ -31,10 +31,10 @@ params:
   uri:
      label: "REDCap Server URL for accessing the API:"
      value: "https://redcap.psm.edu/api/"
-  end_date: 
+   end_date: 
      label: "Report End Date:"
      value: "2022-06-30"
-  download_from_server: FALSE
+  download_from_server: TRUE
 ---
                             
 

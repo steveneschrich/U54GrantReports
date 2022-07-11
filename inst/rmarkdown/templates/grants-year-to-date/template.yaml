@@ -1,4 +1,3 @@
 name: U54 Grant Report - Year to Date
-description: >
-  U54 Monthly Grant Report template for creating Grant Year to Date reports.
-create_dir: FALSE
+description:  U54 Monthly Grant Report template for creating Grant Year to Date reports.
+create_dir: false
