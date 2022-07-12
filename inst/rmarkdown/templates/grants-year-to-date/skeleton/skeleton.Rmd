@@ -84,7 +84,7 @@ if ( params$download_from_server ) {
   suppressMessages(
     grants <- pgreportr::import_grants(params$uri, token)
   )
-  dir.create(here::here("data","cached_grants.rds"), showWarnings = FALSE)
+  dir.create(here::here("data"), showWarnings = FALSE)
   saveRDS(grants, here::here("data","cached_grants.rds"))
 } else {
   grants <- readRDS(here::here("data","cached_grants.rds"))
