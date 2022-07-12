@@ -62,7 +62,7 @@ YAML header cannot include a function with parameters as a call, only the refere
 to the function.
 
 There are specific functions that handle various combinations of parameters. See, for
-instance, [\code{\link[=knitr_docx_with_timestamp]{knitr_docx_with_timestamp()}}].
+instance, [\code{\link[=knit_docx_prompt]{knit_docx_prompt()}}].
 
 The specific customizations of knitr include:
 \itemize{

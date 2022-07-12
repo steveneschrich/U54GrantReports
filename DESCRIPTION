@@ -1,6 +1,6 @@
 Package: U54Reports
 Title: Markdown Report Templates for U54 NCI Reporting
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     person("Steven", "Eschrich", , "Steven.Eschrich@moffitt.org", role = c("aut", "cre"))
 Description: As part of a NCI-funded U54 grant, this package offers R Markdown templates
@@ -14,11 +14,15 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Imports: 
+    devtools,
+    here,
+    pgreportr,
+    rmarkdown,
+    xfun,
     dplyr,
     ggplot2,
     officedown,
-    officer,
-    pgreportr
+    officer
 Remotes: 
   steveneschrich/pgreportr,
   steveneschrich/U54Reports

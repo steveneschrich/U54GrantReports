@@ -1,12 +1,9 @@
 ---
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-title:  "PHSU-MCC Monthly Publication Report"
+title:  "PHSU-MCC U54 Publication Report - Year to Date"
 author: ""
 output: 
   officedown::rdocx_document:
-    # NB: R execution does not seem supported here, so include path 
-    # relative to markdown document (typically in reports/ vs templates/).
-    reference_docx: "u54_docx.docx"
     page_margins:
       bottom: 0.5
       top: 0.5
@@ -20,7 +17,11 @@ output:
       height: 11
       orient: "portrait"
 
-knit: pgreportr::knit_docx_with_datestamp_shiny
+# The following parameter has two options:
+# - U54Reports::knit_docx_prompt  --- launch page to set the parameters of the report.
+# - U54Reports::knit_docx --- use parameters defined below (programmer mode).
+knit: U54Reports::knit_docx_prompt
+
 
 # Markdown parameters. You can specify a REDCap export
 # file (.r or .csv pair) or a
@@ -30,7 +31,7 @@ knit: pgreportr::knit_docx_with_datestamp_shiny
 params:
   uri: "https://redcap.psm.edu/api/"
   end_date: "2022-05-31"
-  download_from_server: FALSE
+  download_from_server: TRUE
 ---
                             
 
@@ -69,9 +70,7 @@ REDCap data version: `r redcap_version_date`
 ```{r load-redcap}
 
 if ( params$download_from_server ) {
-  pubs <- readRDS(here::here("data","cached_pubs.rds"))
-} else {
-  # NOTE:
+   # NOTE:
   # If you have not stored the key yet, use the following command at the R prompt to store it.
   #
   # keyring::key_set("pgreportr-REDCap-Publications-API-token", username = NULL, prompt = "REDCap API Publications Token: ")
@@ -81,7 +80,11 @@ if ( params$download_from_server ) {
   suppressMessages(
     pubs <- pgreportr::import_publications(params$uri, token)
   )
+  dir.create(here::here("data"), showWarnings = FALSE)
   saveRDS(pubs, here::here("data","cached_pubs.rds"))
+ 
+} else {
+  pubs <- readRDS(here::here("data","cached_pubs.rds"))
 }
 ```
 

@@ -19,7 +19,7 @@
 #'  to the function.
 #'
 #'  There are specific functions that handle various combinations of parameters. See, for
-#'  instance, [[knitr_docx_with_timestamp()]].
+#'  instance, [[knit_docx_prompt()]].
 #'
 #'  The specific customizations of knitr include:
 #'
@@ -101,6 +101,6 @@ knit_docx_prompt <- function(...) {
 #' docx_template()
 #'
 docx_template <- function() {
-  system.file("rmarkdown","templates", "u54_docx.docx", package = "U54Reports")
+  system.file("rmarkdown", "u54_docx.docx", package = "U54Reports")
 }
 
