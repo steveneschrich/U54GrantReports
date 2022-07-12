@@ -101,6 +101,6 @@ knit_docx_prompt <- function(...) {
 #' docx_template()
 #'
 docx_template <- function() {
-  system.file("rmarkdown", "u54_docx.docx", package = "U54Reports")
+  system.file("resources", "u54_docx.docx", package = "U54Reports")
 }
 
